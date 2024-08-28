@@ -1,0 +1,129 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-spring4-4.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<title>Team-Service</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+body,h1,h2,h3,h4,h5,h6 {font-family: "Raleway", Arial, Helvetica, sans-serif}
+.myLink {display: none}
+</style>
+<body class="w3-light-grey">
+
+<!-- Navigation Bar -->
+<div class="w3-bar w3-white w3-border-bottom w3-xlarge">
+    <img class="w3-bar-item " src="ericsson.png" height="50">
+    <a href="/" class="w3-bar-item w3-button w3-text-blue w3-hover-blue"><b>Retrospective Tool</b></a>
+    <a href="/" class="w3-bar-item w3-button w3-text-grey w3-hover-blue"><b>Home</b></a>
+</div>
+
+<!-- Page content -->
+<div class="w3-content" style="max-width:1100px;">
+
+    <!-- Create Team -->
+    <div class="w3-container w3-margin-top">
+        <h3>Create Team</h3>
+        <div class="w3-container w3-card-4 w3-light-grey">
+            <form>
+                <p>
+                    <label>Team Name</label>
+                    <input class="w3-input w3-border w3-round" name="Team Name" type="text" id="teamName"></p>
+                <p>
+                    <label>Team Members</label>
+                    <input class="w3-input w3-border w3-round" name="Team Members" type="text" id="teamMembers"></p>
+                <p></p>
+            </form>
+            <button class="w3-button w3-blue w3-hover-black" id="create" onclick="sendJSON()">Create</button>
+            <p></p>
+        </div>
+    </div>
+
+    <div class="w3-container w3-margin-top">
+        <h3>Teams Registered</h3>
+        <div class="w3-container w3-card-4 w3-light-grey">
+            <p></p>
+            <button class="w3-button w3-blue w3-hover-black" id="button" onclick="getJSON()">View Teams</button>
+            <p></p>
+            <div id="id01"></div>
+        </div>
+    </div>
+
+
+    <!-- End page content -->
+</div>
+
+<script>
+function sendJSON() {
+
+    var teamName = document.getElementById("teamName").value;
+    var teamMembers = document.getElementById("teamMembers").value;
+
+    if(teamName == "" || teamMembers == ""){
+        alert("All Values Must Be Provided")
+    }
+    else{
+
+            var data = {
+        teamName: teamName,
+        teamMembers: teamMembers,
+        retrospectiveId: 0
+        };
+
+        var json = JSON.stringify(data);
+
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", "/teams");
+        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.onload = function () {
+            if(xhr.status == 201){
+                document.getElementById("teamMembers").value = ""
+                document.getElementById("teamName").value = ""
+                getJSON();
+            }
+            else {
+                alert("Something went wrong" , xhr.status)
+            }
+
+        };
+        xhr.send(json);
+
+    }
+
+}
+function getJSON() {
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', "/teams", true);
+    xhr.responseType = 'json';
+    xhr.onload = function() {
+      var status = xhr.status;
+      if (status === 200) {
+        if(xhr.response == ""){
+
+        }
+        else{
+         var myArr = xhr.response;
+         parseJSON(myArr);
+        }
+      } else {
+        alert("Error: Something went wrong. Error Code = ", xhr.status);
+      }
+    };
+    xhr.send();
+
+    };
+
+function parseJSON(arr) {
+  var out = "";
+  var i;
+  for(i = 0; i < arr.length; i++) {
+    out += '<div class="w3-container w3-card-4 w3-light-grey"><h3>Team Name: ' + arr[i].teamName + '</h3><br><h4>Team Members: ' +
+    arr[i].teamMembers + '</h4><br></div><br>';
+  }
+  document.getElementById("id01").innerHTML = out;
+}
+</script>
+</body>
+</html>

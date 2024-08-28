@@ -1,0 +1,489 @@
+<!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-spring4-4.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<title>Team-Service</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+body,h1,h2,h3,h4,h5,h6 {font-family: "Raleway", Arial, Helvetica, sans-serif}
+.myLink {display: none}
+</style>
+<body class="w3-light-grey">
+
+<!-- Navigation Bar -->
+<div class="w3-bar w3-white w3-border-bottom w3-xlarge">
+    <img class="w3-bar-item " src="ericsson.png" height="50">
+    <a href="#" class="w3-bar-item w3-button w3-text-blue w3-hover-blue"><b>Retrospective Tool</b></a>
+    <a href="/team-service.html" class="w3-bar-item w3-button w3-text-grey w3-hover-blue"><b>Create Team</b></a>
+</div>
+
+<!-- Page content -->
+<div class="w3-content" style="max-width:1100px;">
+
+
+<!-- Create Retrospective -->
+    <div class="w3-container w3-margin-top">
+        <h3>Create Retrospective</h3>
+        <div class="w3-container w3-card-4 w3-light-grey">
+            <form>
+                <p>
+                    <label>Team Name</label>
+                    <input class="w3-input w3-border w3-round" name="Team Name" type="text" id="teamName"></p>
+                <p>
+                    <label>Sprint</label>
+                    <input class="w3-input w3-border w3-round" name="Sprint" type="text" id="sprint"></p>
+                <p></p>
+            </form>
+            <button class="w3-button w3-blue w3-hover-black" id="createRetro" onclick="createRetro()">Create</button>
+            <button class="w3-button w3-blue w3-hover-black" id="getRetro" onclick="findRetroBoard()">Find</button>
+            <p></p>
+        </div>
+    </div>
+
+    <!-- Retro Board -->
+    <div class="w3-container w3-margin-top" id="board" style="display: none;">
+        <h3 id="retroTitle">Retrospective Board</h3>
+        <div class="w3-container w3-card-4 w3-light-grey">
+            <div class="w3-cell-row">
+
+                <div class="w3-container w3-light-grey w3-cell">
+                    <div id="myDIV" class="header">
+                        <h2>Sad</h2>
+                        <input type="text" id="myInput" placeholder="Item...">
+                        <button onclick="sad()" class="addBtn">Add</button>
+                    </div>
+
+                    <ul id="myUL">
+
+                    </ul>
+                </div>
+
+                <div class="w3-container w3-light-grey w3-cell">
+                    <div id="myDIV2" class="header">
+                        <h2>Mad</h2>
+                        <input type="text" id="myInput2" placeholder="Item...">
+                        <button onclick="mad()" class="addBtn">Add</button>
+                    </div>
+
+                    <ul id="myUL2">
+
+                    </ul>
+                </div>
+
+                <div class="w3-container w3-light-grey w3-cell">
+                    <div id="myDIV3" class="header">
+                        <h2>Glad</h2>
+                        <input type="text" id="myInput3" placeholder="Item...">
+                        <button onclick="glad()" class="addBtn">Add</button>
+                    </div>
+
+                    <ul id="myUL3">
+
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- End page content -->
+</div>
+
+<script>
+var retroID = "";
+
+var myNodelist = document.getElementsByTagName("LI");
+var i;
+for (i = 0; i < myNodelist.length; i++) {
+  var span = document.createElement("SPAN");
+  var txt = document.createTextNode("\u00D7");
+  span.className = "close";
+  span.appendChild(txt);
+  myNodelist[i].appendChild(span);
+}
+
+var close = document.getElementsByClassName("close");
+var i;
+for (i = 0; i < close.length; i++) {
+  close[i].onclick = function() {
+    var div = this.parentElement;
+    div.style.display = "none";
+  }
+}
+
+var list = document.querySelector('ul');
+list.addEventListener('click', function(ev) {
+  if (ev.target.tagName === 'LI') {
+    ev.target.classList.toggle('checked');
+  }
+}, false);
+
+function sad() {
+
+  var inputValue = document.getElementById("myInput").value;
+
+  if (inputValue === '') {
+    alert("You must write something!");
+  } else {
+      var data = {
+      boardId: parseInt(retroID),
+      category: "sad",
+      creator_id: 1,
+      description: inputValue,
+      vote: 0
+      };
+
+      var json = JSON.stringify(data);
+
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", "http://localhost:8300/items/create");
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.onload = function () {
+          if(xhr.status == 201){
+              document.getElementById("myInput").value = "";
+              getJSON();
+          }
+          else {
+              alert("Something went wrong" , xhr.status)
+          }
+
+      };
+      xhr.send(json);
+
+      
+  }
+
+  
+}
+
+function getJSON() {
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', "http://localhost:8300/items", true);
+    xhr.responseType = 'json';
+    xhr.onload = function() {
+      var status = xhr.status;
+      if (status === 200) {
+        if(xhr.response == ""){
+
+        }
+        else{
+         var myArr = xhr.response;
+         parseJSON(myArr);
+        }
+      } else {
+        alert("Error: Something went wrong. Error Code = ", status);
+      }
+    };
+    xhr.send();
+
+    };
+
+function parseJSON(arr) {
+  var li = document.createElement("li");
+  var out = "";
+  var i;
+  for(i = 0; i < arr.length; i++) {
+    if(arr[i].category == "sad" && arr[i].boardId == retroID){
+      out += '<li>'+arr[i].description+'<i class="fa fa-thumbs-up"  style="padding-left:5px;color:blue" onclick="voteUp('+arr[i].id+')"></i><i class="fa fa-thumbs-down" style="padding-left:5px;color:blue" onclick="voteDown('+arr[i].id+')"></i><i>(Votes = '+arr[i].vote+')</i></li>';
+    }
+
+  }
+  var t = document.createTextNode(out);
+  li.appendChild(t);
+  document.getElementById("myUL").innerHTML = out;
+
+}
+
+function mad() {
+
+  var inputValue = document.getElementById("myInput2").value;
+  console.log("mad retro id=" + retroID);
+  if (inputValue === '') {
+    alert("You must write something!");
+  } else {
+      var data = {
+      boardId: parseInt(retroID),
+      category: "mad",
+      creator_id: 1,
+      description: inputValue,
+      vote: 1
+      };
+
+      var json = JSON.stringify(data);
+
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", "http://localhost:8300/items/create");
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.onload = function () {
+          if(xhr.status == 201){
+              document.getElementById("myInput2").value = "";
+              getMadJSON();
+          }
+          else {
+              alert("Something went wrong" , xhr.status)
+          }
+
+      };
+      xhr.send(json);
+
+      
+  }
+
+  
+}
+
+function getMadJSON() {
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', "http://localhost:8300/items", true);
+    xhr.responseType = 'json';
+    xhr.onload = function() {
+      var status = xhr.status;
+      if (status === 200) {
+        if(xhr.response == ""){
+
+        }
+        else{
+         var myArr = xhr.response;
+         parseMadJSON(myArr);
+        }
+      } else {
+        alert("Error: Something went wrong. Error Code = ", status);
+      }
+    };
+    xhr.send();
+
+    };
+
+function parseMadJSON(arr) {
+  var li = document.createElement("li");
+  var out = "";
+  var i;
+  for(i = 0; i < arr.length; i++) {
+    if(arr[i].category == "mad" && arr[i].boardId == retroID){
+      out += '<li>'+arr[i].description+'<i class="fa fa-thumbs-up"  style="padding-left:5px;color:blue" onclick="voteUp('+arr[i].id+')"></i><i class="fa fa-thumbs-down" style="padding-left:5px;color:blue" onclick="voteDown('+arr[i].id+')"></i><i>(Votes = '+arr[i].vote+')</i></li>';
+    }
+
+  }
+  document.getElementById("myUL2").innerHTML = out;
+
+}
+
+function glad() {
+
+  var inputValue = document.getElementById("myInput3").value;
+  console.log("Glad Retro id = " + retroID);
+  if (inputValue === '') {
+    alert("You must write something!");
+  } else {
+      var data = {
+      boardId: parseInt(retroID),
+      category: "glad",
+      creator_id: 1,
+      description: inputValue,
+      vote: 1
+      };
+
+      var json = JSON.stringify(data);
+
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", "http://localhost:8300/items/create");
+      xhr.setRequestHeader("Content-Type", "application/json");
+      xhr.onload = function () {
+          if(xhr.status == 201){
+              
+              document.getElementById("myInput3").value = "";
+              getGladJSON();
+          }
+          else {
+              alert("Something went wrong" , xhr.status)
+          }
+
+      };
+      xhr.send(json);
+
+      
+  }
+
+  
+}
+
+function getGladJSON() {
+
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', "http://localhost:8300/items", true);
+    xhr.responseType = 'json';
+    xhr.onload = function() {
+      var status = xhr.status;
+      if (status === 200) {
+        if(xhr.response == ""){
+
+        }
+        else{
+         var myArr = xhr.response;
+         parseGladJSON(myArr);
+        }
+      } else {
+        alert("Error: Something went wrong. Error Code = ", status);
+      }
+    };
+    xhr.send();
+
+    };
+
+function parseGladJSON(arr) {
+  var li = document.createElement("li");
+  var out = "";
+  var i;
+  for(i = 0; i < arr.length; i++) {
+    if(arr[i].category == "glad" && arr[i].boardId == retroID){
+      out += '<li>'+arr[i].description+'<i class="fa fa-thumbs-up"  style="padding-left:5px;color:blue" onclick="voteUp('+arr[i].id+')"></i><i class="fa fa-thumbs-down" style="padding-left:5px;color:blue" onclick="voteDown('+arr[i].id+')"></i><i>(Votes = '+arr[i].vote+')</i></li>';
+    }
+
+  }
+  document.getElementById("myUL3").innerHTML = out;
+
+}
+
+function createRetro() {
+   
+   var teamNameInput = document.getElementById("teamName").value;
+   var sprint = document.getElementById("sprint").value
+
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', "/teams", true);
+  xhr.responseType = 'json';
+  xhr.onload = function() {
+    var status = xhr.status;
+    if (status === 200) {
+       var myArr = xhr.response;
+        for(var i = 0; i < myArr.length; i++) {
+          if(myArr[i].teamName == teamNameInput ){
+            clearBoard();
+            retroCreate(sprint, teamNameInput);
+          }
+        }
+    } else {
+      alert("Error: Something went wrong. Error Code = ", xhr.status);
+    }
+  };
+  xhr.send();
+}
+
+function retroCreate(sprint, teamNameInput) {
+  var data = {
+    title:sprint
+  };
+
+  var json = JSON.stringify(data);
+
+  var xhr = new XMLHttpRequest();
+  xhr.open("POST", "http://localhost:8111/retrospectives/create");
+  xhr.setRequestHeader("Content-Type", "application/json");
+  xhr.onload = function () {
+          getRetros(sprint,teamNameInput);
+          document.getElementById("board").style.display = "block";
+          document.getElementById("retroTitle").innerHTML = "Retrospective Board : Sprint - " + sprint + " Team - " + teamNameInput;
+
+  };
+  xhr.send(json);
+}
+
+function getRetros(sprint, teamName){
+
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', "http://localhost:8111/retrospectives", true);
+      xhr.responseType = 'json';
+      xhr.onload = function() {
+           var myArr = xhr.response;
+            for(var i = 0; i < myArr.length; i++) {
+              if(myArr[i].title == sprint ){
+                var id = myArr[i].id;
+                retroID = id;
+                updateTeamRetroID(id, teamName);
+              }
+            }
+      };
+      xhr.send();
+}
+
+function updateTeamRetroID(id, teamName) {
+    var data = 'id='+id+'&teamName='+teamName;
+    console.log(id, teamName)
+    var xhr = new XMLHttpRequest();
+    xhr.open("PUT", "http://localhost:8200/teams/retro");
+    xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+    xhr.onload = function () {
+
+    };
+    xhr.send(data);
+}
+
+function findRetroBoard(){
+  var teamNameInput = document.getElementById("teamName").value;
+  var sprint = document.getElementById("sprint").value;
+  getRetros(sprint, teamNameInput);
+
+
+  getJSON();
+  getMadJSON();
+  getGladJSON();
+
+  document.getElementById("board").style.display = "block";
+  document.getElementById("retroTitle").innerHTML = "Retrospective Board : Sprint - " + sprint + " Team - " + teamNameInput;
+
+
+}
+
+function clearBoard(){
+  document.getElementById("myUL").innerHTML = "";
+  document.getElementById("myUL2").innerHTML = "";
+  document.getElementById("myUL3").innerHTML = "";
+}
+
+function voteUp(itemId){
+
+      var data = 'id='+itemId;
+
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", "http://localhost:8300/items/voteup");
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.onload = function () {
+
+
+      };
+      xhr.send(data);
+      getJSON();
+      getMadJSON();
+      getGladJSON();
+
+}
+
+function voteDown(itemId){
+
+      var data = 'id='+itemId;
+
+
+      var xhr = new XMLHttpRequest();
+      xhr.open("POST", "http://localhost:8300/items/votedown");
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.onload = function () {
+
+
+      };
+      xhr.send(data);
+      getJSON();
+      getMadJSON();
+      getGladJSON();
+
+}
+
+
+
+</script>
+</body>
+</html>

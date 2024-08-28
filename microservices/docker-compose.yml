@@ -1,0 +1,94 @@
+version:  '3'
+
+
+services:
+
+  discovery:
+    build: ./discovery-service
+    ports:
+      - "8761:8761"
+
+  api-gateway:
+    build: ./api-gateway-service
+    ports:
+      - "8762:8762"
+    depends_on:
+      - discovery
+    environment:
+      - EUREKA_SERVER=http://discovery:8761/eureka
+    expose:
+      - "8762"
+
+  items-service:
+    build: ./items-service
+    ports:
+      - "8300:8300"
+    depends_on:
+      - discovery
+    environment:
+      - EUREKA_SERVER=http://discovery:8761/eureka
+      - MYSQL_DATABASE=jdbc:mysql://database:3306/database
+      - MYSQL_ROOT_PASSWORD=gladiators
+      - MYSQL_USER=root
+    expose:
+      - "8300"
+
+
+  item-comment-service:
+    build: ./item-comment-service
+    ports:
+      - "8400:8400"
+    depends_on:
+      - discovery
+    environment:
+      - EUREKA_SERVER=http://discovery:8761/eureka
+      - MYSQL_DATABASE=jdbc:mysql://database:3306/database
+      - MYSQL_ROOT_PASSWORD=gladiators
+      - MYSQL_USER=root
+    expose:
+      - "8400"
+
+  retrospective-service:
+    build: ./retrospective-service
+    ports:
+      - "8111:8111"
+    depends_on:
+      - discovery
+    environment:
+      - EUREKA_SERVER=http://discovery:8761/eureka
+      - MYSQL_DATABASE=jdbc:mysql://database:3306/database
+      - MYSQL_ROOT_PASSWORD=gladiators
+      - MYSQL_USER=root
+    expose:
+      - "8111"
+
+
+  teams-service:
+    build: ./team-service
+    ports:
+      - "8200:8200"
+    depends_on:
+      - discovery
+    environment:
+      - EUREKA_SERVER=http://discovery:8761/eureka
+      - MYSQL_DATABASE=jdbc:mysql://database:3306/database
+      - MYSQL_ROOT_PASSWORD=gladiators
+      - MYSQL_USER=root
+    expose:
+      - "8200"
+
+  database:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_DATABASE: "database"
+      MYSQL_ROOT_PASSWORD: "gladiators"
+    ports:
+      - "3306:3306"
+    expose:
+      - "3306"
+    volumes:
+      - retrofit-tool-database:/var/lib/mysql
+
+volumes:
+  retrofit-tool-database:
